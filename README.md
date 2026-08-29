@@ -88,6 +88,7 @@ Amazon EKS
         v
 Prometheus / Grafana
 
+```
 Repository Structure
 
 secure-eks-gitops-platform/
@@ -188,4 +189,3 @@ Project Status
 🚧 In Progress
 
 Current phase: Architecture and infrastructure design
-```

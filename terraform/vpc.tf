@@ -11,7 +11,7 @@ resource "aws_subnet" "pubsub_a" {
   availability_zone = var.availability_zones[0]
 
   tags = {
-    Name = "Public Subenet A"
+    Name = "Public Subnet A"
   }
 }
 
@@ -21,7 +21,7 @@ resource "aws_subnet" "pubsub_b" {
   availability_zone = var.availability_zones[1]
 
   tags = {
-    Name = "Public Subenet B"
+    Name = "Public Subnet B"
   }
 }
 
@@ -31,7 +31,7 @@ resource "aws_subnet" "privsub_a" {
   availability_zone = var.availability_zones[0]
 
   tags = {
-    Name = "Private Subenet A"
+    Name = "Private Subnet A"
   }
 }
 
@@ -41,6 +41,6 @@ resource "aws_subnet" "privsub_b" {
   availability_zone = var.availability_zones[1]
 
   tags = {
-    Name = "Private Subenet B"
+    Name = "Private Subnet B"
   }
 }

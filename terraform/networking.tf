@@ -60,7 +60,7 @@ resource "aws_route_table" "private_route_a" {
   }
 
   tags = {
-    Name = "private-route-table_a"
+    Name = "private_route_table_a"
   }
 }
 
@@ -73,7 +73,7 @@ resource "aws_route_table" "private_route_b" {
   }
 
   tags = {
-    Name = "private-route-table_b"
+    Name = "private_route_table_b"
   }
 }
 

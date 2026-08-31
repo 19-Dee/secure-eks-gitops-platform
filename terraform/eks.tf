@@ -5,7 +5,7 @@ resource "aws_eks_cluster" "multienv_eks_cluster" {
     authentication_mode = "API"
   }
 
-  role_arn = aws_iam_role.cluster.arn
+  role_arn = aws_iam_role.multienv_eks_cluster_iam_role.arn
   version  = "1.35"
 
   vpc_config {

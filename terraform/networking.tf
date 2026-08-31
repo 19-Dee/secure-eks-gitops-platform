@@ -11,7 +11,7 @@ resource "aws_nat_gateway" "pubsub_a_ngw" {
   subnet_id     = aws_subnet.pubsub_a.id
 
   tags = {
-    Name = "gw NAT for public subnet a"
+    Name = "nat-gw-a"
   }
 
   # To ensure proper ordering, it is recommended to add an explicit dependency
@@ -27,7 +27,7 @@ resource "aws_nat_gateway" "pubsub_b_ngw" {
   subnet_id     = aws_subnet.pubsub_b.id
 
   tags = {
-    Name = "gw NAT for public subnet b"
+    Name = "nat-gw-b"
   }
 
   # To ensure proper ordering, it is recommended to add an explicit dependency
@@ -51,7 +51,31 @@ resource "aws_route_table" "public_route" {
   }
 }
 
+resource "aws_route_table" "private_route_a" {
+  vpc_id = aws_vpc.main.id
 
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.pubsub_a_ngw.id
+  }
+
+  tags = {
+    Name = "private-route-table_a"
+  }
+}
+
+resource "aws_route_table" "private_route_b" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.pubsub_b_ngw.id
+  }
+
+  tags = {
+    Name = "private-route-table_b"
+  }
+}
 
 
 resource "aws_route_table_association" "pubsub_a_rta" {
@@ -64,12 +88,12 @@ resource "aws_route_table_association" "pubsub_b_rta" {
   route_table_id = aws_route_table.public_route.id
 }
 
-resource "aws_nat_gateway_eip_association" "pubsub_a_eip_association" {
-  allocation_id  = aws_eip.pubsub_a_eip.id
-  nat_gateway_id = aws_nat_gateway.pubsub_a_ngw.id
+resource "aws_route_table_association" "privsub_a_rta" {
+  subnet_id      = aws_subnet.privsub_a.id
+  route_table_id = aws_route_table.private_route_a.id
 }
 
-resource "aws_nat_gateway_eip_association" "pubsub_b_eip_association" {
-  allocation_id  = aws_eip.pubsub_b_eip.id
-  nat_gateway_id = aws_nat_gateway.pubsub_b_ngw.id
+resource "aws_route_table_association" "privsub_b_rta" {
+  subnet_id      = aws_subnet.privsub_b.id
+  route_table_id = aws_route_table.private_route_b.id
 }

@@ -9,6 +9,9 @@ resource "aws_eks_cluster" "multienv_eks_master" {
   version  = "1.35"
 
   vpc_config {
+    endpoint_private_access = true
+    endpoint_public_access  = true
+    public_access_cidrs     = var.admin_cidr
     subnet_ids = [
       aws_subnet.privsub_a.id,
       aws_subnet.privsub_b.id,
@@ -28,6 +31,7 @@ resource "aws_eks_node_group" "my_eks_ng" {
   node_group_name = "my_eks_ng"
   node_role_arn   = aws_iam_role.multienv_eks_worker_node_iam_role.arn
   subnet_ids      = [aws_subnet.privsub_a.id, aws_subnet.privsub_b.id]
+  instance_types  = ["m7i-flex.large"]
 
   scaling_config {
     desired_size = 1

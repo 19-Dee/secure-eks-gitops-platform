@@ -12,7 +12,6 @@ resource "aws_eks_cluster" "multienv-eks-cluster" {
     subnet_ids = [
       aws_subnet.pubsub_a.id,
       aws_subnet.pubsub_b.id,
-      aws_subnet.pubsub_c.id,
       aws_subnet.privsub_a.id,
       aws_subnet.privsub_b.id,
     ]

@@ -68,3 +68,12 @@ resource "aws_eks_pod_identity_association" "multienv_eks_pod_identity" {
   ]
 }
 
+resource "aws_eks_access_policy_association" "multienv_eks_access_policy_association" {
+  cluster_name  = aws_eks_cluster.multienv_eks_master.name
+  policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+  principal_arn = "arn:aws:iam::142969859154:user/devops-user"
+
+  access_scope {
+    type = "cluster"
+  }
+}

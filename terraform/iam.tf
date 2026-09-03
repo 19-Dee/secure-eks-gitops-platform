@@ -39,7 +39,7 @@ resource "aws_iam_role_policy_attachment" "multienv_eks_cni_iam_role_AmazonEKS_C
 }
 
 resource "aws_iam_role_policy_attachment" "multienv_eks_worker_node_iam_role_AmazonEC2ContainerRegistryReadOnly" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPullOnly"
   role       = aws_iam_role.multienv_eks_worker_node_iam_role.name
 }
 
@@ -65,4 +65,9 @@ resource "aws_iam_role" "multienv_eks_master_iam_role" {
       },
     ]
   })
+}
+
+resource "aws_eks_access_entry" "aws_devopsuser_eks_access_entry" {
+  cluster_name  = aws_eks_cluster.multienv_eks_master.name
+  principal_arn = "arn:aws:iam::142969859154:user/devops-user"
 }

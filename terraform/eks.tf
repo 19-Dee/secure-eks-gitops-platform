@@ -47,7 +47,6 @@ resource "aws_eks_node_group" "my_eks_ng" {
   # Otherwise, EKS will not be able to properly delete EC2 Instances and Elastic Network Interfaces.
   depends_on = [
     aws_iam_role_policy_attachment.multienv_eks_worker_node_iam_role_AmazonEKSWorkerNodePolicy,
-    aws_iam_role_policy_attachment.multienv_eks_worker_node_iam_role_AmazonEKS_CNI_Policy,
     aws_iam_role_policy_attachment.multienv_eks_worker_node_iam_role_AmazonEC2ContainerRegistryReadOnly,
   ]
 }

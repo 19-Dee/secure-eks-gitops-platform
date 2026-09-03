@@ -42,3 +42,27 @@ resource "aws_iam_role_policy_attachment" "multienv_eks_worker_node_iam_role_Ama
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   role       = aws_iam_role.multienv_eks_worker_node_iam_role.name
 }
+
+resource "aws_iam_role_policy_attachment" "master_AmazonEKSClusterPolicy" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+  role       = aws_iam_role.multienv_eks_master_iam_role.name
+}
+
+resource "aws_iam_role" "multienv_eks_master_iam_role" {
+  name = "multienv_eks_master_iam_role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "sts:AssumeRole",
+          "sts:TagSession"
+        ]
+        Effect = "Allow"
+        Principal = {
+          Service = "eks.amazonaws.com"
+        }
+      },
+    ]
+  })
+}

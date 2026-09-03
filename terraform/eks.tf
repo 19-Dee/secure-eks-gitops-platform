@@ -51,26 +51,20 @@ resource "aws_eks_node_group" "my_eks_ng" {
   ]
 }
 
-resource "aws_iam_role" "multienv_eks_master_iam_role" {
-  name = "multienv_eks_master_iam_role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = [
-          "sts:AssumeRole",
-          "sts:TagSession"
-        ]
-        Effect = "Allow"
-        Principal = {
-          Service = "eks.amazonaws.com"
-        }
-      },
-    ]
-  })
+resource "aws_eks_addon" "multienv_eks_addon" {
+  cluster_name = aws_eks_cluster.multienv_eks_master.name
+  addon_name   = "eks-pod-identity-agent"
 }
 
-resource "aws_iam_role_policy_attachment" "master_AmazonEKSClusterPolicy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.multienv_eks_master_iam_role.name
+resource "aws_eks_pod_identity_association" "multienv_eks_pod_identity" {
+  cluster_name    = aws_eks_cluster.multienv_eks_master.name
+  namespace       = "kube-system"
+  service_account = "aws-node"
+  role_arn        = aws_iam_role.multienv_eks_cni_iam_role.arn
+
+  depends_on = [
+    aws_eks_addon.multienv_eks_addon,
+    aws_iam_role_policy_attachment.multienv_eks_cni_iam_role_AmazonEKS_CNI_Policy
+  ]
 }
+

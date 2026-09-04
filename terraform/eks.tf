@@ -68,6 +68,13 @@ resource "aws_eks_pod_identity_association" "multienv_eks_pod_identity" {
   ]
 }
 
+resource "aws_eks_pod_identity_association" "multienv_eks_lb_controller_pod_identity" {
+  cluster_name    = aws_eks_cluster.multienv_eks_master.name
+  namespace       = "kube-system"
+  service_account = "aws-load-balancer-controller"
+  role_arn        = aws_iam_role.multienv_eks_lb_controller_iam_role.arn
+}
+
 resource "aws_eks_access_policy_association" "multienv_eks_access_policy_association" {
   cluster_name  = aws_eks_cluster.multienv_eks_master.name
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"

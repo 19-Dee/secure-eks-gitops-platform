@@ -6,30 +6,29 @@ metadata:
   labels:
     app: portfolio
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: portfolio 
+      app: portfolio
   template:
     metadata:
       labels:
         app: portfolio
     spec:
       containers:
-      - name: portfolio
-        image: 142969859154.dkr.ecr.eu-west-2.amazonaws.com/multienv-app:v1
-        ports:
-        - containerPort: 5000   
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 5000
-          initialDelaySeconds: 10
-          periodSeconds: 20
-
+        - name: portfolio
+          image: 142969859154.dkr.ecr.eu-west-2.amazonaws.com/multienv-app:v1
+          ports:
+            - containerPort: 5000
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 20

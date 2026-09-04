@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: portfolio
-          image: 142969859154.dkr.ecr.eu-west-2.amazonaws.com/multienv-app:cb093062946252f438e4694fe1c78625ad429501
+          image: 142969859154.dkr.ecr.eu-west-2.amazonaws.com/multienv-app:07bd84076f926df32080e4507f44c359af70cb57
           ports:
             - containerPort: 5000
           readinessProbe:

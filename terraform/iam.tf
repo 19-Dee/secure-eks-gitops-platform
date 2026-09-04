@@ -28,6 +28,31 @@ resource "aws_iam_role" "multienv_eks_cni_iam_role" {
   })
 }
 
+resource "aws_iam_role" "multienv_eks_lb_controller_iam_role" {
+  name = "multienv_eks_lb_controller_iam_role"
+
+  assume_role_policy = jsonencode({
+    Statement = [{
+      Action = ["sts:AssumeRole", "sts:TagSession"]
+      Effect = "Allow"
+      Principal = {
+        Service = "pods.eks.amazonaws.com"
+      }
+    }]
+    Version = "2012-10-17"
+  })
+}
+
+resource "aws_iam_policy" "multienv_eks_lb_controller_policy" {
+  name   = "AWSLoadBalancerControllerIAMPolicy"
+  policy = file("${path.module}/policies/aws-load-balancer-controller.json")
+}
+
+resource "aws_iam_role_policy_attachment" "multienv_eks_lb_controller_policy_attachment" {
+  role       = aws_iam_role.multienv_eks_lb_controller_iam_role.name
+  policy_arn = aws_iam_policy.multienv_eks_lb_controller_policy.arn
+}
+
 resource "aws_iam_role_policy_attachment" "multienv_eks_worker_node_iam_role_AmazonEKSWorkerNodePolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
   role       = aws_iam_role.multienv_eks_worker_node_iam_role.name

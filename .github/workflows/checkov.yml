@@ -23,5 +23,6 @@ jobs:
         with:
           directory: terraform
           framework: terraform
+          var_file: terraform/checkov.tfvars
           # Accepted exceptions: controls are intentionally handled by architecture, AWS-managed defaults, or are out of scope for this cost-conscious portfolio environment.
           skip_check: CKV_AWS_39,CKV_AWS_58,CKV_AWS_136,CKV_AWS_338,CKV_AWS_158,CKV2_AWS_19

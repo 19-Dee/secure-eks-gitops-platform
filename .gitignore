@@ -1,6 +1,7 @@
 .history/
 .DS_Store
 *.tfvars
+!terraform/checkov.tfvars
 *.tfstate
 *.tfstate.*
 .terraform/

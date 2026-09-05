@@ -127,7 +127,7 @@ resource "aws_iam_role" "github_actions_ecr_role" {
         Condition = {
           StringEquals = {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
-            "token.actions.githubusercontent.com:sub" = "repo:19-Dee/dishen-portfolio:ref:refs/heads/main"
+            "token.actions.githubusercontent.com:sub" = "repo:19-Dee@146390483/dishen-portfolio@1357352162:ref:refs/heads/main"
           }
         }
       }
@@ -167,4 +167,38 @@ resource "aws_iam_policy" "github_actions_ecr_policy" {
 resource "aws_iam_role_policy_attachment" "github_actions_ecr_attachment" {
   role       = aws_iam_role.github_actions_ecr_role.name
   policy_arn = aws_iam_policy.github_actions_ecr_policy.arn
+}
+
+resource "aws_iam_role" "vpc_flow_logs" {
+  name = "multienv-vpc-flow-logs-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "vpc-flow-logs.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "vpc_flow_logs" {
+  name = "multienv-vpc-flow-logs-policy"
+  role = aws_iam_role.vpc_flow_logs.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams"
+      ]
+      Resource = "${aws_cloudwatch_log_group.vpc_flow_logs.arn}:*"
+    }]
+  })
 }

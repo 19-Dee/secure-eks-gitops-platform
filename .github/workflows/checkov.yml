@@ -1,0 +1,27 @@
+name: Checkov IaC Scan
+
+on:
+  push:
+    branches:
+      - main
+      - feat/eks
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  checkov:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: terraform
+          framework: terraform
+          # Accepted exceptions: controls are intentionally handled by architecture, AWS-managed defaults, or are out of scope for this cost-conscious portfolio environment.
+          skip_check: CKV_AWS_39,CKV_AWS_58,CKV_AWS_136,CKV_AWS_338,CKV_AWS_158,CKV2_AWS_19

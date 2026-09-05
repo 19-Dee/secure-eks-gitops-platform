@@ -50,3 +50,10 @@ resource "aws_subnet" "privsub_b" {
     "kubernetes.io/role/internal-elb" = "1"
   }
 }
+
+resource "aws_default_security_group" "default" {
+  vpc_id = aws_vpc.main.id
+
+  ingress = []
+  egress  = []
+}

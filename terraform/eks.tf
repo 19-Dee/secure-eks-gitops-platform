@@ -8,6 +8,14 @@ resource "aws_eks_cluster" "multienv_eks_master" {
   role_arn = aws_iam_role.multienv_eks_master_iam_role.arn
   version  = "1.35"
 
+  enabled_cluster_log_types = [
+    "api",
+    "audit",
+    "authenticator",
+    "controllerManager",
+    "scheduler"
+  ]
+
   vpc_config {
     endpoint_private_access = true
     endpoint_public_access  = true

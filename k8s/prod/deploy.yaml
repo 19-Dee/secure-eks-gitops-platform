@@ -18,6 +18,13 @@ spec:
       containers:
         - name: portfolio
           image: 142969859154.dkr.ecr.eu-west-2.amazonaws.com/multienv-app:e1a02dba0b26feff8ba3111072e25f7d34154a8e
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
           ports:
             - containerPort: 5000
           readinessProbe:

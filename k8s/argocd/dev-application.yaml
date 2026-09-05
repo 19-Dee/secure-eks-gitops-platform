@@ -4,7 +4,16 @@ metadata:
   name: portfolio-dev
   namespace: argocd
 spec:
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: portfolio-deployment
+      namespace: dev
+      jsonPointers:
+        - /spec/replicas
   syncPolicy:
+    syncOptions:
+      - RespectIgnoreDifferences=true
     automated:
       prune: true
       selfHeal: true

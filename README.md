@@ -1,101 +1,198 @@
 # Secure Multi-Environment EKS GitOps Platform
 
-A production-style platform engineering project focused on building a secure, automated, and observable Kubernetes deployment platform on AWS.
+A production-style AWS platform engineering project that provisions Kubernetes infrastructure with Terraform, deploys applications through GitOps, integrates CI security controls, separates development and production environments, and adds monitoring and autoscaling.
 
-The platform will use Infrastructure as Code, CI/CD, and GitOps to provision infrastructure, build and scan container images, and deploy applications consistently across development and production environments.
-
----
-
-## Project Scenario
-
-A growing software team currently deploys its containerised application manually.
-
-This creates several problems:
-
-- Infrastructure can become inconsistent between environments
-- Deployments are manual and error-prone
-- Security checks are not consistently enforced
-- Application releases are difficult to track and roll back
-- There is limited visibility into application and cluster health
-
-The goal of this project is to design and build a reusable AWS-based Kubernetes platform that addresses these problems through automation and GitOps practices.
+The project was built end-to-end to demonstrate practical ownership of infrastructure, CI/CD, Kubernetes, security, observability, and troubleshooting.
 
 ---
 
-## Objectives
+## Architecture
 
-The platform should:
+```mermaid
+flowchart TD
+    DEV[Developer] --> APP[Application Repository]
+    APP --> CI[GitHub Actions]
 
-- Provision AWS infrastructure using Terraform
-- Run containerised workloads on Amazon EKS
-- Support separate development and production environments
-- Build and scan container images automatically
-- Store container images in Amazon ECR
-- Use GitHub Actions for CI
-- Use ArgoCD for GitOps-based continuous delivery
-- Package Kubernetes workloads using Helm
-- Enforce container and Infrastructure as Code security checks
-- Provide application and cluster observability
-- Avoid long-lived AWS credentials in GitHub
+    CI --> TRIVY[Trivy Scan]
+    CI --> BUILD[Docker Build]
+    BUILD --> ECR[Amazon ECR]
+
+    CI --> GITOPS[GitOps Repository]
+    GITOPS --> ARGO[ArgoCD]
+
+    ARGO --> DEVNS[Dev Namespace]
+    ARGO --> PRODNS[Prod Namespace]
+
+    ALB[AWS ALB] --> DEVNS
+    ALB --> PRODNS
+
+    METRICS[Metrics Server] --> HPA[Horizontal Pod Autoscaler]
+    HPA --> DEVNS
+
+    PROM[Prometheus] --> GRAFANA[Grafana]
+    DEVNS --> PROM
+    PRODNS --> PROM
+```
 
 ---
 
-## Planned Technology Stack
+## What I Built
+
+The platform includes:
+
+- Terraform-managed AWS infrastructure
+- Multi-AZ VPC with public and private subnets
+- Private Amazon EKS worker nodes
+- Amazon ECR
+- GitHub Actions CI
+- GitHub-to-AWS OIDC authentication
+- Trivy container vulnerability scanning
+- Checkov Terraform scanning
+- ArgoCD GitOps delivery
+- Separate `dev` and `prod` namespaces
+- AWS Load Balancer Controller
+- Prometheus and Grafana
+- Kubernetes Metrics Server
+- Horizontal Pod Autoscaling
+- Terraform remote state in S3
+
+---
+
+## Tech Stack
 
 | Area | Technology |
 |---|---|
 | Cloud | AWS |
-| Infrastructure as Code | Terraform |
-| Containerisation | Docker |
-| Container Registry | Amazon ECR |
-| Container Orchestration | Amazon EKS / Kubernetes |
+| IaC | Terraform |
+| Containers | Docker |
+| Kubernetes | Amazon EKS |
+| Registry | Amazon ECR |
 | CI | GitHub Actions |
-| GitOps / CD | ArgoCD |
-| Kubernetes Packaging | Helm |
-| Container Security | Trivy |
-| IaC Security | Checkov |
-| Monitoring | Prometheus |
-| Visualisation | Grafana |
-| Source Control | Git / GitHub |
+| GitOps | ArgoCD |
+| Security | Trivy, Checkov |
+| Monitoring | Prometheus, Grafana |
+| Autoscaling | Kubernetes HPA |
+| Authentication | GitHub OIDC, IAM |
 
 ---
 
-## High-Level Delivery Flow
+## CI/CD and GitOps Flow
 
 ```text
-Developer pushes code
-        |
-        v
-GitHub Repository
-        |
-        v
+Application commit
+      ↓
 GitHub Actions
-        |
-        +--> Validation / Tests
-        |
-        +--> Security Scanning
-        |
-        +--> Docker Image Build
-        |
-        v
-Amazon ECR
-        |
-        v
-GitOps Configuration Update
-        |
-        v
-ArgoCD
-        |
-        v
-Amazon EKS
-        |
-        +--> Development Environment
-        |
-        +--> Production Environment
-        |
-        v
-Prometheus / Grafana
+      ↓
+Validation / Build
+      ↓
+Trivy image scan
+      ↓
+Push immutable SHA-tagged image to ECR
+      ↓
+Update dev Kubernetes manifest
+      ↓
+ArgoCD detects Git change
+      ↓
+Automatic dev deployment
 ```
+
+GitHub Actions handles continuous integration.
+
+ArgoCD owns deployment into Kubernetes, so CI does not directly run `kubectl apply`.
+
+### Development
+
+`dev` uses:
+
+- automated sync
+- pruning
+- self-healing
+
+### Production
+
+`prod` uses deliberate promotion.
+
+A tested image is explicitly promoted by updating the production manifest and manually syncing the ArgoCD application.
+
+This prevents every application commit from becoming an automatic production deployment.
+
+---
+
+## Security
+
+Security controls implemented in the platform include:
+
+- GitHub Actions authentication to AWS using OIDC
+- no long-lived AWS access keys in CI
+- least-privilege IAM policies
+- immutable ECR image tags
+- ECR scan-on-push
+- Trivy HIGH/CRITICAL vulnerability gating
+- Checkov IaC scanning in GitHub Actions
+- restricted EKS public API CIDRs
+- EKS control-plane logging
+- VPC Flow Logs
+- locked-down default VPC security group
+
+Checkov findings were reviewed individually rather than blindly suppressed. Accepted exceptions are explicitly defined in the CI workflow.
+
+---
+
+## Observability
+
+The cluster uses `kube-prometheus-stack`, providing:
+
+- Prometheus
+- Grafana
+- kube-state-metrics
+- node-exporter
+- Alertmanager
+- Prometheus Operator
+
+This provides visibility into:
+
+- pod CPU and memory
+- namespace resource usage
+- node health
+- Kubernetes object state
+- workload behaviour
+
+Grafana is accessed locally through port forwarding rather than being exposed publicly.
+
+---
+
+## Horizontal Pod Autoscaling
+
+The development workload uses an `autoscaling/v2` HPA.
+
+```text
+Minimum replicas: 1
+Maximum replicas: 4
+Metric: CPU utilization
+Target: 50%
+```
+
+The application defines CPU and memory requests so the HPA can calculate utilization correctly.
+
+During load testing:
+
+```text
+1 replica
+   ↓
+sustained HTTP traffic
+   ↓
+CPU utilization increased
+   ↓
+HPA scaled to 4 replicas
+   ↓
+traffic stopped
+   ↓
+scale-down stabilization
+   ↓
+returned to 1 replica
+```
+
+This validated both scale-out and scale-in behaviour.
 
 ---
 
@@ -103,120 +200,187 @@ Prometheus / Grafana
 
 ```text
 secure-eks-gitops-platform/
-├── app/          # Containerised application
-├── terraform/    # AWS infrastructure
-├── helm/         # Helm chart for the application
-├── gitops/       # ArgoCD and environment configuration
+├── .github/
+│   └── workflows/
+├── bootstrap/
+│   └── Terraform remote-state infrastructure
+├── terraform/
+│   ├── backend.tf
+│   ├── providers.tf
+│   ├── variables.tf
+│   ├── vpc.tf
+│   ├── networking.tf
+│   ├── eks.tf
+│   ├── ecr.tf
+│   ├── iam.tf
+│   └── logging.tf
+├── k8s/
+│   ├── argocd/
+│   ├── dev/
+│   ├── prod/
+│   └── system/
 ├── .gitignore
 └── README.md
 ```
 
----
-
-## Planned Infrastructure
-
-The AWS environment will include the core resources required to operate the platform, including:
-
-- VPC and networking
-- Public and private subnets
-- IAM roles and policies
-- Amazon EKS
-- EKS worker nodes
-- Amazon ECR
-- Terraform remote state
-- Application ingress and load balancing
-
-The exact architecture will be refined as the project is implemented.
+The application source and application CI workflow are maintained in a separate repository.
 
 ---
 
-## Environments
+## Key Engineering Challenges
 
-The platform will initially use a single EKS cluster with separate Kubernetes namespaces:
+### EKS Authentication
 
-- `dev`
-- `prod`
+AWS credentials were valid, but `kubectl` could not access the cluster.
 
-This provides logical environment separation while keeping the infrastructure appropriate for the scope and cost of the project.
+The issue was EKS authorization rather than IAM authentication.
 
----
-
-## CI/CD and GitOps
-
-The intended workflow is:
+The final access path was:
 
 ```text
-Code Change
+IAM principal
     ↓
-GitHub Actions
+EKS Access Entry
     ↓
-Validate / Test / Scan
+EKS Access Policy
     ↓
-Build Docker Image
-    ↓
-Push Image to Amazon ECR
-    ↓
-Update GitOps Configuration
-    ↓
-ArgoCD Detects Desired-State Change
-    ↓
-Synchronise Kubernetes Resources
-    ↓
-Application Runs on EKS
+Kubernetes permissions
 ```
 
-GitHub Actions will handle **continuous integration**, while ArgoCD will own **continuous delivery** into Kubernetes.
+### ARM64 vs AMD64 Images
+
+The application was initially built on Apple Silicon and failed on AMD64 EKS worker nodes.
+
+The Docker build was updated to target:
+
+```text
+linux/amd64
+```
+
+### Terraform Teardown
+
+Terraform destroy initially failed because AWS Load Balancer Controller-managed resources still existed inside the VPC.
+
+This highlighted an important ownership boundary:
+
+```text
+Terraform
+    → AWS infrastructure
+
+AWS Load Balancer Controller
+    → ALB-related resources created from Kubernetes Ingress
+```
+
+### Checkov Local vs CI
+
+Checkov passed locally but initially failed in GitHub Actions because a Terraform variable value existed only in the local environment.
+
+A safe CI-specific tfvars file was added so the remote runner could evaluate the same configuration.
+
+### ArgoCD vs HPA
+
+ArgoCD and the HPA initially both affected Deployment replica count.
+
+The final design gives HPA ownership of:
+
+```text
+/spec/replicas
+```
+
+while ArgoCD manages the rest of the Deployment.
 
 ---
 
-## Security
+## Reproducing the Platform
 
-Security will be incorporated throughout the delivery process rather than added only after deployment.
+### 1. Bootstrap remote state
 
-Planned controls include:
+```bash
+cd bootstrap
+terraform init
+terraform apply
+```
 
-- Trivy container vulnerability scanning
-- Checkov Terraform scanning
-- Least-privilege IAM
-- GitHub Actions authentication to AWS using OIDC
-- No long-lived AWS credentials committed to the repository
-- Kubernetes security configuration where appropriate
+### 2. Provision AWS infrastructure
+
+```bash
+cd ../terraform
+terraform init
+terraform plan
+terraform apply
+```
+
+### 3. Configure kubectl
+
+```bash
+aws eks update-kubeconfig \
+  --region eu-west-2 \
+  --name multienv_eks_master
+```
+
+### 4. Install platform components
+
+Install:
+
+- AWS Load Balancer Controller
+- ArgoCD
+- kube-prometheus-stack
+- Metrics Server
+
+### 5. Apply ArgoCD applications
+
+```bash
+kubectl apply -f k8s/argocd/dev-application.yaml
+kubectl apply -f k8s/argocd/prod-application.yaml
+```
 
 ---
 
-## Observability
+## Validation
 
-Prometheus and Grafana will provide basic platform and workload monitoring.
+Useful checks:
 
-The platform should make it possible to investigate questions such as:
+```bash
+kubectl get nodes
+kubectl get pods -A
+kubectl get applications -n argocd
+kubectl get hpa -n dev
+kubectl top pods -n dev
+terraform plan
+```
 
-- Is the application available?
-- Are pods healthy?
-- Are containers restarting?
-- What CPU and memory resources are workloads consuming?
-- Is the Kubernetes environment operating normally?
+A fully reconciled Terraform environment should return:
+
+```text
+No changes. Your infrastructure matches the configuration.
+```
 
 ---
 
-## Definition of Done
+## Screenshots
 
-The project will be considered complete when:
+Suggested evidence:
 
-- AWS infrastructure can be reproduced from Terraform
-- EKS is operational
-- The application is containerised and stored in ECR
-- GitHub Actions successfully runs the CI pipeline
-- Security scans are integrated into CI
-- Development and production environments are separated
-- ArgoCD manages application deployment through GitOps
-- The application can be accessed successfully
-- Monitoring is available through Prometheus and Grafana
-- The architecture and deployment workflow can be explained and troubleshot independently
+- ArgoCD showing healthy `dev` and `prod` applications
+- Grafana Kubernetes dashboard
+- HPA scaling from 1 to 4 replicas
+- HPA scale-in back to 1 replica
 
 ---
 
 ## Project Status
 
-🚧 **In Progress**
+**Complete**
 
-**Current phase:** Architecture and infrastructure design
+Validated outcomes include:
+
+- reproducible AWS infrastructure
+- secure EKS deployment
+- CI with OIDC authentication
+- Trivy and Checkov security gates
+- GitOps deployment through ArgoCD
+- separate dev and prod environments
+- Prometheus and Grafana monitoring
+- HPA scale-out from 1 to 4 replicas
+- scale-in back to 1 replica
+- zero Terraform drift after final reconciliation

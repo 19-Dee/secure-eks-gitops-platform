@@ -8,6 +8,11 @@ The project was built end-to-end to demonstrate practical ownership of infrastru
 
 ## Architecture
 
+<img width="1644" height="1138" alt="Screenshot 2026-09-07 at 20 59 39" src="https://github.com/user-attachments/assets/503577c5-eb7d-4923-a411-57f1ca1c4fa0" />
+
+
+
+
 The platform separates responsibilities across infrastructure provisioning, continuous integration, GitOps delivery, Kubernetes operations, security, and observability.
 
 > **Architecture note:** Dev and prod namespaces are logical Kubernetes environments and are not pinned to specific Availability Zones. Their Pods can be scheduled across worker nodes in either private subnet. The Dev and Prod ALBs are separate internet-facing load balancers, and each spans both public subnets for multi-AZ availability.

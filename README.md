@@ -42,7 +42,7 @@ The project provisions a multi-AZ VPC with private EKS worker nodes, separate de
    GitHub Actions authenticates to AWS using OIDC instead of long-lived access keys. Trivy scans container images, Checkov scans Terraform configuration and ECR uses immutable image tags with scan-on-push enabled.
 
 6. **Observability**  
-   Prometheus and Grafana provide visibility into Kubernetes and workload health, Metrics Server exposes Kubernetes resource metrics used by the development HPA, while Prometheus and Grafana provide broader cluster and workload observability.
+   Metrics Server exposes Kubernetes resource metrics used by the development HPA, while Prometheus and Grafana provide broader cluster and workload observability.
 
 > Dev and prod are logical Kubernetes environments and are not tied to specific Availability Zones. Their Pods can be scheduled across worker nodes in either private subnet.
 

@@ -42,7 +42,7 @@ The project provisions a multi-AZ VPC with private EKS worker nodes, separate de
    GitHub Actions authenticates to AWS using OIDC instead of long-lived access keys. Trivy scans container images, Checkov scans Terraform configuration and ECR uses immutable image tags with scan-on-push enabled.
 
 6. **Observability**  
-   Prometheus and Grafana provide visibility into Kubernetes and workload health, while Metrics Server supplies resource metrics to the development Horizontal Pod Autoscaler.
+   Prometheus and Grafana provide visibility into Kubernetes and workload health, Metrics Server exposes Kubernetes resource metrics used by the development HPA, while Prometheus and Grafana provide broader cluster and workload observability.
 
 > Dev and prod are logical Kubernetes environments and are not tied to specific Availability Zones. Their Pods can be scheduled across worker nodes in either private subnet.
 
@@ -79,10 +79,23 @@ The project provisions a multi-AZ VPC with private EKS worker nodes, separate de
 ### Monitoring and Autoscaling
 
 - Prometheus and Grafana are deployed using `kube-prometheus-stack`.
-- Metrics Server provides the Kubernetes resource Metrics API.
-- The dev workload uses a Horizontal Pod Autoscaler.
-- The HPA scales between 1 and 4 replicas using CPU utilization.
-- The final CPU target is 50%.
+- Metrics Server provides the Kubernetes resource Metrics API used by the HPA.
+- The dev workload uses a CPU-based Horizontal Pod Autoscaler.
+- The HPA scales between 1 and 4 replicas.
+- Because the portfolio application is lightweight, the CPU target is set to 5% so scaling behaviour can be demonstrated reliably under controlled load.
+- Scale-up and scale-down behaviour is rate-limited to one Pod every 30 seconds, producing a controlled scaling pattern rather than abrupt jumps.
+
+During testing, sustained HTTP load was generated against the dev ALB. The workload scaled cleanly from:
+
+`1 → 2 → 3 → 4 replicas`
+
+After the load stopped and CPU utilization dropped below the target, the HPA automatically scaled the workload back down:
+
+`4 → 3 → 2 → 1 replica`
+
+This validated both scale-out and scale-in behaviour without manually changing the replica count during the test.
+
+<img width="758" height="353" alt="Screenshot 2026-09-09 at 11 28 10" src="https://github.com/user-attachments/assets/3cde3b3f-5299-4d43-8242-133579239b17" />
 
 ## Prometheus and Grafana
 

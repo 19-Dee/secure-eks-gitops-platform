@@ -46,6 +46,14 @@ The project provisions a multi-AZ VPC with private EKS worker nodes, separate de
 
 > Dev and prod are logical Kubernetes environments and are not tied to specific Availability Zones. Their Pods can be scheduled across worker nodes in either private subnet.
 
+## Continuous Integration
+
+The application source is maintained in a separate private repository.
+
+GitHub Actions builds and scans the container image, pushes an immutable SHA-tagged image to Amazon ECR, and updates the GitOps repository with the new image reference.
+
+<img width="1269" height="766" alt="image" src="https://github.com/user-attachments/assets/a0420b7a-4d2b-46e6-bef2-8943360c7322" />
+
 ## Features
 
 ### Infrastructure as Code

@@ -7,7 +7,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/19-Dee/secure-eks-gitops-platform.git
-    targetRevision: feat/eks
+    targetRevision: main
     path: k8s/prod
   destination:
     server: https://kubernetes.default.svc

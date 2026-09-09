@@ -14,13 +14,14 @@ spec:
   syncPolicy:
     syncOptions:
       - RespectIgnoreDifferences=true
+      - CreateNamespace=true
     automated:
       prune: true
       selfHeal: true
   project: default
   source:
     repoURL: https://github.com/19-Dee/secure-eks-gitops-platform.git
-    targetRevision: feat/eks
+    targetRevision: main
     path: k8s/dev
   destination:
     server: https://kubernetes.default.svc

@@ -11,6 +11,21 @@ spec:
     kind: Deployment
     name: portfolio-deployment
 
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 30
+
+    scaleDown:
+      stabilizationWindowSeconds: 30
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 30
+
   minReplicas: 1
   maxReplicas: 4
 
@@ -20,4 +35,4 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 50
+          averageUtilization: 1

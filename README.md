@@ -98,7 +98,7 @@ Monitoring includes:
 
 Grafana was accessed locally through port forwarding rather than being exposed publicly.
 
-<!-- Add Grafana screenshot here -->
+<img width="2526" height="1331" alt="grafana-dash" src="https://github.com/user-attachments/assets/003e4971-706b-4090-9a10-c5ca5e89b772" />
 
 ## ArgoCD
 
@@ -110,7 +110,12 @@ For development, synchronization is automated with pruning and self-healing enab
 
 Production uses a separate ArgoCD Application with manual synchronization, preventing every application commit from automatically becoming a production deployment.
 
-<!-- Add ArgoCD screenshot here -->
+<img width="2563" height="1355" alt="Screenshot 2026-09-09 at 10 32 08" src="https://github.com/user-attachments/assets/a5fec270-a4a7-445e-98da-94d701347209" />
+
+<img width="2585" height="969" alt="Screenshot 2026-09-09 at 10 31 19" src="https://github.com/user-attachments/assets/2dc510a8-6149-4ded-a2d2-c9c385d76973" />
+
+<img width="2544" height="1069" alt="Screenshot 2026-09-09 at 10 32 11" src="https://github.com/user-attachments/assets/e23d1bfe-386e-4f0e-afbc-514e1cab2a59" />
+
 
 ## Key Engineering Challenges
 

@@ -7,3 +7,7 @@ variable "aws_region" {
   type    = string
   default = "eu-west-2"
 }
+
+variable "admin_cidr" {
+  type = list(string)
+}
